@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+    table {
+        width: 90%;
+        margin: 30px 5%;
+        text-align: center;
+    }
+        td,th {
+            border: 1px solid #ccc;
+            width: 20%;
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>名称</th>
+                <th>年龄</th>
+                <th>学校</th>
+                <th>专业</th>
+            </tr>
+        </thead>
+        <tbody id="content">
+            
+        </tbody>
+    </table>
+    
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+        <li class="previous">
+            <a href="javascript:void(0);">
+            <span aria-hidden="true">&laquo;</span>
+            </a>    
+        </li>
+        
+        <li class="my-guide next">
+            <a href="javascript:void(0);">
+            <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+      </ul>
+    </nav>
+    <script src="js/jquery.min.js"></script>
+    <script>
+    $(function () {
+        var pages = 10;
+        var index = 1;
+        $.ajax({
+            type: "GET",
+            url: "js/date.json",
+            dataType: "json",
+            success:function(data){
+                var data = data.date.date_list;
+                var dataNumber = data.length; 
+                total = Math.ceil(dataNumber/10);
+                for (var i = 0; i < pages; i++) {
+                    var htm = '<tr>' 
+                    +'<td>' + data[i].id + '</td>' 
+                    +'<td>' + data[i].name + '</td>' 
+                    +'<td>' + data[i].age + '</td>' 
+                    +'<td>' + data[i].school + '</td>' 
+                    +'<td>' + data[i].professional + '</td>' 
+                    +'</tr>';
+                    $("#content").append(htm);
+                }; 
+                for (var t = 1; t <= total; t++) { 
+                    var str  = '<li data-id="tow" page="' + t + '"'
+                    +'class="handClickGo' + (t == index ? " active" : "") + '">'
+                    +'<a href="javascript:void(0);">' + t + '</a>'
+                    +'</li>';
+                    $(".my-guide").before(str);
+                };
+                //翻页时调用 高亮显示当前页
+                function newTodo () {
+                    $("[data-id='tow']").each(function () {
+                        if ($(this).attr("page") == index) {
+                            $(this).addClass("active").siblings("[data-id='tow']").removeClass("active");
+                        }
+                    });
+                };
+                $(".handClickGo").click(function () {
+                    var id = Number($(this).attr("page"));
+                    if (id > Number(index)) {
+                        next(id);
+                    } else if (id < index) { 
+                        previous(id);
+                    } else {
+                        return false;
+                    } 
+                });
+                //下一页
+                $(".next").click(function () {
+                    next(index+1);
+                });
+                function next (how) {
+                    console.log(how);
+                    if (how != 1) {
+                        var page = Number(how*10-10);
+                    } else {
+                        var page = Number(pages);
+                    } 
+                    index = Number(how); 
+                    pages = Number(how*10);
+                    var lave = dataNumber - pages;
+                    newTodo();
+                    if (pages < dataNumber || lave < 10 && lave > -10) { 
+                        $("#content").html("");
+
+                        for (var i = page; i < pages; i++) {
+                            if (i < data.length) {
+                                var htm = '<tr>' 
+                                +'<td>' + data[i].id + '</td>' 
+                                +'<td>' + data[i].name + '</td>' 
+                                +'<td>' + data[i].age + '</td>' 
+                                +'<td>' + data[i].school + '</td>' 
+                                +'<td>' + data[i].professional + '</td>' 
+                                +'</tr>';
+                                $("#content").append(htm);
+                            }
+                        }
+                    } else {
+                        pages-=10;
+                        alert("已是最后一页");
+                    }
+                };
+                //上一页
+                $(".previous").click(function () { 
+                    previous(Number(index -= 1)); 
+                });
+                function previous (how) { 
+                    if (how != 1) {
+                        var page = Number(how*10);
+                    } else {
+                        var page = Number(10);
+                    } 
+                    index = Number(how); 
+                    pages = Number(how*10);
+                    newTodo(); 
+                    if (pages > 0 ) { 
+                        $("#content").html("");
+                        var j = 0; 
+                        for (var i = (page - 1); i <= pages; i--) { 
+                            j++;
+                            if (j > 10) { 
+                               return true;
+                            } else { 
+                                var htm = '<tr>' 
+                                +'<td>' + data[i].id + '</td>' 
+                                +'<td>' + data[i].name + '</td>' 
+                                +'<td>' + data[i].age + '</td>' 
+                                +'<td>' + data[i].school + '</td>' 
+                                +'<td>' + data[i].professional + '</td>' 
+                                +'</tr>';
+                                $("#content").prepend(htm);
+                            }
+                        }
+                    } else {
+                        alert("当前已是第一页");
+                    }
+                };
+            }
+        });
+    });
+    </script>
+</body>
+</html>
